@@ -29,5 +29,14 @@
     referrerpolicy="origin"
     src="https://jika.io/embed/area-chart?symbol=GRND&selection=one_year&closeKey=close&boxShadow=true&graphColor=1652f0&textColor=161c2d&backgroundColor=FFFFFF&fontFamily=Nunito&">
   </iframe>
+  <script>
+    window.addEventListener('orientationchange', function() {
+      var meta = document.querySelector('meta[name="viewport"]');
+      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+      setTimeout(function() {
+        meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }, 300);
+    });
+  </script>
 </body>
 </html>
