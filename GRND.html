@@ -1,42 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GRND – 1 Year Price Chart</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Chart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    .container { width: 100%; max-width: 860px; }
+    h1 { font-size: 22px; font-weight: 700; color: #161c2d; }
+    .subtitle { margin-top: 4px; font-size: 13px; color: #6b7280; }
+    .controls { display: flex; gap: 10px; margin: 20px 0 16px; flex-wrap: wrap; align-items: center; }
+    .ticker-row { display: flex; gap: 6px; flex: 1; min-width: 200px; }
+    input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+    }
+    .btn-go {
+      padding: 8px 18px;
+      background: #1652f0;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+    }
+    .periods { display: flex; gap: 4px; }
+    .btn-period {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .btn-period.active { background: #1652f0; color: #fff; }
+    .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .btn-preset {
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #d1d5db;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      background: #fff;
+      color: #374151;
+    }
+    .btn-preset.active { background: #161c2d; color: #fff; }
     iframe {
-      display: block;
-      width: 100%;
-      height: 50vh;
+      background: #fff;
       border: none;
       border-radius: 5px;
       box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
-      background: #FFFFFF;
-    }
-
-    @media (orientation: landscape) {
-      iframe {
-        height: 100vw;
-      }
+      display: block;
     }
   </style>
 </head>
 <body>
-  <iframe
-    referrerpolicy="origin"
-    src="https://jika.io/embed/area-chart?symbol=GRND&selection=one_year&closeKey=close&boxShadow=true&graphColor=1652f0&textColor=161c2d&backgroundColor=FFFFFF&fontFamily=Serif&">
-  </iframe>
+  <div class="container">
+    <h1>Stock Chart</h1>
+    <p class="subtitle">Powered by Jika.io</p>
+
+    <div class="controls">
+      <div class="ticker-row">
+        <input id="tickerInput" type="text" placeholder="Ticker (e.g. AAPL)" value="AAPL" />
+        <button class="btn-go" onclick="applyTicker()">Go</button>
+      </div>
+      <div class="periods" id="periodButtons"></div>
+    </div>
+
+    <div class="presets" id="presetButtons"></div>
+
+    <iframe id="chart" referrerpolicy="origin" width="100%" height="470"></iframe>
+  </div>
+
   <script>
-    window.addEventListener('orientationchange', function() {
-      var meta = document.querySelector('meta[name="viewport"]');
-      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
-      setTimeout(function() {
-        meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-      }, 300);
+    const PRESETS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"];
+    const PERIODS = [
+      { label: "1M", value: "one_month" },
+      { label: "3M", value: "three_months" },
+      { label: "6M", value: "six_months" },
+      { label: "1Y", value: "one_year" },
+      { label: "5Y", value: "five_years" },
+    ];
+
+    let currentSymbol = "AAPL";
+    let currentPeriod = "one_year";
+
+    function updateChart() {
+      const src = `https://jika.io/embed/area-chart?symbol=${currentSymbol}&selection=${currentPeriod}&closeKey=close&boxShadow=true&graphColor=1652f0&textColor=161c2d&backgroundColor=FFFFFF&fontFamily=Nunito&`;
+      document.getElementById("chart").src = src;
+    }
+
+    function applyTicker() {
+      const val = document.getElementById("tickerInput").value.trim().toUpperCase();
+      if (!val) return;
+      currentSymbol = val;
+      updatePresets();
+      updateChart();
+    }
+
+    function setPeriod(value) {
+      currentPeriod = value;
+      updatePeriods();
+      updateChart();
+    }
+
+    function setPreset(ticker) {
+      currentSymbol = ticker;
+      document.getElementById("tickerInput").value = ticker;
+      updatePresets();
+      updateChart();
+    }
+
+    function updatePeriods() {
+      document.querySelectorAll(".btn-period").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.value === currentPeriod);
+      });
+    }
+
+    function updatePresets() {
+      document.querySelectorAll(".btn-preset").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.ticker === currentSymbol);
+      });
+    }
+
+    // Build period buttons
+    const periodContainer = document.getElementById("periodButtons");
+    PERIODS.forEach(p => {
+      const btn = document.createElement("button");
+      btn.className = "btn-period" + (p.value === currentPeriod ? " active" : "");
+      btn.dataset.value = p.value;
+      btn.textContent = p.label;
+      btn.onclick = () => setPeriod(p.value);
+      periodContainer.appendChild(btn);
     });
+
+    // Build preset buttons
+    const presetContainer = document.getElementById("presetButtons");
+    PRESETS.forEach(t => {
+      const btn = document.createElement("button");
+      btn.className = "btn-preset" + (t === currentSymbol ? " active" : "");
+      btn.dataset.ticker = t;
+      btn.textContent = t;
+      btn.onclick = () => setPreset(t);
+      presetContainer.appendChild(btn);
+    });
+
+    // Enter key on input
+    document.getElementById("tickerInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") applyTicker();
+    });
+
+    // Initial load
+    updateChart();
   </script>
 </body>
 </html>
